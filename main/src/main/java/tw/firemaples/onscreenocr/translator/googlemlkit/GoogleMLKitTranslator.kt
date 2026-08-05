@@ -134,7 +134,7 @@ object GoogleMLKitTranslator : Translator {
                 setTitle(context.getString(R.string.title_download))
                 setMessage(
                     context.getString(R.string.msg_models_to_download) +
-                            "\n\n${langToDownload.joinToString(", ")}"
+                            "\n\n${displayNamesOf(langToDownload)}"
                 )
                 setDialogType(DialogView.DialogType.CONFIRM_CANCEL)
 
@@ -163,12 +163,34 @@ object GoogleMLKitTranslator : Translator {
                 }
         }
 
+    /**
+     * Maps ISO-639-1 codes to the human readable language names declared in resources,
+     * so the download dialog shows "Spanish" instead of "es".
+     */
+    private fun displayNameOf(code: String): String {
+        val langCodeList =
+            context.resources.getStringArray(R.array.google_MLKit_translationLangCode_iso6391)
+        val langNameList =
+            context.resources.getStringArray(R.array.google_MLKit_translationLangName)
+        val index = langCodeList.indexOfFirst { it.firstPart() == code.firstPart() }
+        return if (index >= 0 && index < langNameList.size) {
+            "${langNameList[index]} ($code)"
+        } else {
+            code
+        }
+    }
+
+    private fun displayNamesOf(codes: List<String>): String =
+        codes.joinToString(", ") { displayNameOf(it) }
+
     private suspend fun downloadResources(
         langList: List<String>,
+        onStartDownloading: (index: Int, lang: String) -> Unit = { _, _ -> },
         onProgress: (completed: Int, total: Int) -> Unit,
     ) {
         for ((index, lang) in langList.withIndex()) {
             kotlinx.coroutines.currentCoroutineContext().ensureActive()
+            onStartDownloading(index, lang)
             suspendCancellableCoroutine { c ->
                 remoteModelManager.download(
                     TranslateRemoteModel.Builder(lang).build(),
@@ -183,16 +205,50 @@ object GoogleMLKitTranslator : Translator {
         }
     }
 
+    private fun buildDownloadMessage(
+        langList: List<String>,
+        completed: Int,
+        currentIndex: Int,
+    ): String = buildString {
+        append(context.getString(R.string.msg_downloading_language_models))
+        append("\n\n")
+        append(
+            context.getString(
+                R.string.msg_download_progress_count,
+                (currentIndex + 1).coerceAtMost(langList.size),
+                langList.size,
+            )
+        )
+        langList.getOrNull(currentIndex)?.let {
+            append("\n")
+            append(context.getString(R.string.msg_downloading_current_model, displayNameOf(it)))
+        }
+        if (completed > 0) {
+            append("\n")
+            append(
+                context.getString(
+                    R.string.msg_download_completed_models,
+                    displayNamesOf(langList.take(completed)),
+                )
+            )
+        }
+        val pending = langList.drop(maxOf(completed, currentIndex + 1))
+        if (pending.isNotEmpty()) {
+            append("\n")
+            append(
+                context.getString(R.string.msg_download_pending_models, displayNamesOf(pending))
+            )
+        }
+    }
+
     private suspend fun downloadTranslationResources(langList: List<String>) {
         val downloadJob = kotlinx.coroutines.currentCoroutineContext()[Job]
         val dialog = DialogView(context).apply {
             setTitle(context.getString(R.string.title_resources_downloading))
-            setMessage(
-                context.getString(R.string.msg_wait_for_resources_downloading) +
-                        "\n\n0/${langList.size}\n${langList.joinToString(", ")}"
-            )
-            setIndeterminateDownloadProgress()
+            setMessage(buildDownloadMessage(langList, completed = 0, currentIndex = 0))
+            setDownloadProgress(0)
             setDialogType(DialogView.DialogType.CANCEL_ONLY)
+            setCancelByClickingOutside(false)
             onButtonCancelClicked = {
                 downloadJob?.cancel()
             }
@@ -203,10 +259,22 @@ object GoogleMLKitTranslator : Translator {
         FirebaseEvent.logStartDownloadOCRFile(langList.joinToString(","), DOWNLOAD_SITE)
 
         try {
-            downloadResources(langList) { completed, total ->
-                dialog.postIndeterminateDownloadProgress(
-                    context.getString(R.string.msg_wait_for_resources_downloading) +
-                            "\n\n$completed/$total\n${langList.joinToString(", ")}",
+            downloadResources(
+                langList,
+                onStartDownloading = { index, _ ->
+                    dialog.setMessageAndProgress(
+                        buildDownloadMessage(langList, completed = index, currentIndex = index),
+                        index * 100 / langList.size,
+                    )
+                },
+            ) { completed, total ->
+                dialog.setMessageAndProgress(
+                    buildDownloadMessage(
+                        langList,
+                        completed = completed,
+                        currentIndex = completed.coerceAtMost(total - 1),
+                    ),
+                    completed * 100 / total,
                 )
             }
 
