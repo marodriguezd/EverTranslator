@@ -37,6 +37,7 @@ object SettingManager {
     private const val PREF_ENABLE_CONTINUOUS_TRANSLATION = "pref_enable_continuous_translation"
     private const val PREF_CONTINUOUS_TRANSLATION_INTERVAL =
         "pref_continuous_translation_interval"
+    private const val PREF_TRANSLATION_ONLY_MODE = "pref_translation_only_mode"
 
     private const val PREF_SAVE_LAST_SELECTION_AREA = "pref_save_last_selection_area"
     private const val PREF_EXIT_APP_WHILE_SPEN_INSERTED = "pref_exit_app_while_spen_inserted"
@@ -126,6 +127,13 @@ object SettingManager {
     val continuousTranslationIntervalMs: Long
         get() = preferences.getInt(PREF_CONTINUOUS_TRANSLATION_INTERVAL, 2)
             .coerceIn(1, 30) * 1000L
+
+    /**
+     * Minimal overlay mode: only the translated text floats on screen, with no OCR block,
+     * no icon bar and no dimmed background.
+     */
+    val translationOnlyMode: Boolean
+        get() = preferences.getBoolean(PREF_TRANSLATION_ONLY_MODE, false)
 
     val saveLastSelectionArea: Boolean
         get() = preferences.getBoolean(PREF_SAVE_LAST_SELECTION_AREA, true)

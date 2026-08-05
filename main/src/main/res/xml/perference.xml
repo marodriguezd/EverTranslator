@@ -114,6 +114,12 @@
             android:title="@string/pref_title_continuous_translation_interval"
             app:min="1"
             app:showSeekBarValue="true" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="pref_translation_only_mode"
+            android:summary="@string/pref_summary_translation_only_mode"
+            android:title="@string/pref_title_translation_only_mode" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_other_settings">

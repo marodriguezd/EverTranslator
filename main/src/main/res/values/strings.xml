@@ -32,6 +32,8 @@
     <string name="pref_title_continuous_translation_interval">Refresh interval (seconds)</string>
     <string name="pref_summary_continuous_translation_interval">How often the selected area is re-captured.</string>
     <string name="msg_continuous_translation_running">Live translation ON</string>
+    <string name="pref_title_translation_only_mode">Translation only (floating text)</string>
+    <string name="pref_summary_translation_only_mode">Show just the translated text over the screen: no OCR block, no icon bar and no dimmed background.</string>
     <string name="pref_save_last_selected_area">Save last selected area</string>
     <string name="pref_exit_app_while_spen_inserted">Exit app while S Pen Inserted (Samsung only)</string>
     <string name="pref_member_last_main_bar_position">Remember the last main bar position</string>

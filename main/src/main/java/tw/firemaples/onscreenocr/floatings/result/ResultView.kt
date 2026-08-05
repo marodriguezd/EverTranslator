@@ -2,6 +2,7 @@ package tw.firemaples.onscreenocr.floatings.result
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Rect
 import android.text.method.ScrollingMovementMethod
 import android.util.TypedValue
@@ -17,6 +18,7 @@ import tw.firemaples.onscreenocr.floatings.base.FloatingView
 import tw.firemaples.onscreenocr.floatings.manager.Result
 import tw.firemaples.onscreenocr.floatings.recognizedTextEditor.RecognizedTextEditor
 import tw.firemaples.onscreenocr.floatings.textInfoSearch.TextInfoSearchView
+import tw.firemaples.onscreenocr.pages.setting.SettingManager
 import tw.firemaples.onscreenocr.recognition.RecognitionResult
 import tw.firemaples.onscreenocr.translator.TranslationProviderType
 import tw.firemaples.onscreenocr.translator.utils.GoogleTranslateUtils
@@ -50,6 +52,11 @@ class ResultView(context: Context) : FloatingView(context) {
     override val enableHomeButtonWatcher: Boolean
         get() = true
 
+    // In translation-only mode the overlay is purely informative, so touches must reach
+    // the app underneath (scroll the video, tap subtitles, etc.).
+    override val passThroughTouches: Boolean
+        get() = SettingManager.translationOnlyMode
+
     private val viewModel: ResultViewModel by lazy { ResultViewModel(viewScope) }
 
     private val binding: FloatingResultViewBinding = FloatingResultViewBinding.bind(rootLayout)
@@ -66,6 +73,30 @@ class ResultView(context: Context) : FloatingView(context) {
 
     init {
         binding.resultPanel.setViews()
+        applyTranslationOnlyMode()
+    }
+
+    /**
+     * Bubble-Translate-like minimal overlay: only the translated text stays visible.
+     * The OCR block, both icon bars, the provider attribution and the dimmed background
+     * are all removed, leaving just the semi-transparent card with the translation.
+     */
+    private fun applyTranslationOnlyMode() {
+        if (!SettingManager.translationOnlyMode) return
+
+        // No full-screen dimming: the user keeps seeing the app underneath.
+        viewRoot.setBackgroundColor(Color.TRANSPARENT)
+
+        with(binding.resultPanel) {
+            wrapperOcrButtons.visibility = View.GONE
+            wrapperOcrResult.visibility = View.GONE
+            wrapperTranslatedButtons.visibility = View.GONE
+            tvTranslationProvider.visibility = View.GONE
+            ivTranslatedByGoogle.visibility = View.GONE
+        }
+
+        // Bounding boxes over the source text are noise in this mode.
+        binding.viewTextBoundingBoxView.visibility = View.GONE
     }
 
     private fun ViewResultPanelBinding.setViews() {
@@ -97,17 +128,24 @@ class ResultView(context: Context) : FloatingView(context) {
         }
 
         viewModel.displayRecognitionBlock.observe(lifecycleOwner) {
-            groupRecognitionViews.showOrHide(it)
+            // In translation-only mode the OCR block must stay hidden regardless of state.
+            groupRecognitionViews.showOrHide(it && !SettingManager.translationOnlyMode)
         }
         viewModel.displayTranslatedBlock.observe(lifecycleOwner) {
             groupTranslationViews.showOrHide(it)
+            if (SettingManager.translationOnlyMode) {
+                // The group also references the icon bar and attribution; re-hide them.
+                wrapperTranslatedButtons.visibility = View.GONE
+                tvTranslationProvider.visibility = View.GONE
+                ivTranslatedByGoogle.visibility = View.GONE
+            }
         }
 
         viewModel.translationProviderText.observe(lifecycleOwner) {
-            tvTranslationProvider.setTextOrGone(it)
+            if (!SettingManager.translationOnlyMode) tvTranslationProvider.setTextOrGone(it)
         }
         viewModel.displayTranslatedByGoogle.observe(lifecycleOwner) {
-            ivTranslatedByGoogle.showOrHide(it)
+            ivTranslatedByGoogle.showOrHide(it && !SettingManager.translationOnlyMode)
         }
 
         viewModel.displayRecognizedTextAreas.observe(lifecycleOwner) {

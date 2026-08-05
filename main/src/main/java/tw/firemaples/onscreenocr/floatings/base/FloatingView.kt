@@ -49,6 +49,12 @@ abstract class FloatingView(protected val context: Context) {
     open val layoutFocusable: Boolean = false
     open val layoutCanMoveOutsideScreen: Boolean = false
     open val fullscreenMode: Boolean = false
+
+    /**
+     * When true the whole overlay window ignores touches and lets them reach the app
+     * underneath. Used by the translation-only overlay, which is purely informative.
+     */
+    open val passThroughTouches: Boolean = false
     open val layoutGravity: Int = Gravity.TOP or Gravity.LEFT
     open val enableHomeButtonWatcher: Boolean = false
 
@@ -61,6 +67,8 @@ abstract class FloatingView(protected val context: Context) {
         var flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
         if (!layoutFocusable)
             flags = flags or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        if (passThroughTouches)
+            flags = flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
         if (layoutCanMoveOutsideScreen)
             flags = flags or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
         if (fullscreenMode)
