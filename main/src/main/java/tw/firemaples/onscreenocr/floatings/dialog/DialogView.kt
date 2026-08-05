@@ -5,6 +5,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import kotlinx.coroutines.suspendCancellableCoroutine
 import tw.firemaples.onscreenocr.R
@@ -26,6 +27,7 @@ open class DialogView(context: Context) :
     private val viewRoot: View = rootView.findViewById(R.id.viewRoot)
     private val tvTitle: TextView = rootView.findViewById(R.id.tv_title)
     private val tvMessage: TextView = rootView.findViewById(R.id.tv_message)
+    private val progressDownload: ProgressBar = rootView.findViewById(R.id.progress_download)
     private val viewContentViewWrapper: FrameLayout =
         rootView.findViewById(R.id.view_contentViewWrapper)
     private val btOk: Button = rootView.findViewById(R.id.bt_ok)
@@ -55,6 +57,39 @@ open class DialogView(context: Context) :
 
     fun setMessage(message: String) {
         tvMessage.setTextOrGone(message)
+    }
+
+    fun setDownloadProgress(progress: Int) {
+        progressDownload.isIndeterminate = false
+        progressDownload.progress = progress.coerceIn(0, 100)
+        progressDownload.visibility = View.VISIBLE
+    }
+
+    fun setIndeterminateDownloadProgress() {
+        progressDownload.isIndeterminate = true
+        progressDownload.visibility = View.VISIBLE
+    }
+
+    fun hideDownloadProgress() {
+        progressDownload.visibility = View.GONE
+    }
+
+    fun postDownloadProgress(progress: Int) {
+        rootView.post { setDownloadProgress(progress) }
+    }
+
+    fun setMessageAndProgress(message: String, progress: Int) {
+        rootView.post {
+            setMessage(message)
+            setDownloadProgress(progress)
+        }
+    }
+
+    fun postIndeterminateDownloadProgress(message: String) {
+        rootView.post {
+            setMessage(message)
+            setIndeterminateDownloadProgress()
+        }
     }
 
     fun setButtonOkText(text: String) {

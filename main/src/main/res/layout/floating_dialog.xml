@@ -44,12 +44,27 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:visibility="gone"
                 app:layout_constrainedHeight="true"
-                app:layout_constraintBottom_toTopOf="@id/line_topOfButtons"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_title"
                 app:layout_goneMarginTop="24dp"
                 tools:text="Message"
+                tools:visibility="visible" />
+
+            <ProgressBar
+                android:id="@+id/progress_download"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="-12dp"
+                android:layout_marginBottom="24dp"
+                android:max="100"
+                android:visibility="gone"
+                app:layout_constraintBottom_toTopOf="@id/line_topOfButtons"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_message"
                 tools:visibility="visible" />
 
             <FrameLayout

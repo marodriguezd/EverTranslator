@@ -9,7 +9,10 @@ import com.google.mlkit.nl.translate.TranslatorOptions
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import tw.firemaples.onscreenocr.R
 import tw.firemaples.onscreenocr.floatings.dialog.DialogView
@@ -159,29 +162,39 @@ object GoogleMLKitTranslator : Translator {
                 }
         }
 
-    private suspend fun downloadResources(langList: List<String>) {
-        for (lang in langList) {
-            suspendCoroutine { c ->
+    private suspend fun downloadResources(
+        langList: List<String>,
+        onProgress: (completed: Int, total: Int) -> Unit,
+    ) {
+        for ((index, lang) in langList.withIndex()) {
+            kotlinx.coroutines.currentCoroutineContext().ensureActive()
+            suspendCancellableCoroutine { c ->
                 remoteModelManager.download(
                     TranslateRemoteModel.Builder(lang).build(),
                     DownloadConditions.Builder().build()
                 ).addOnSuccessListener {
-                    c.resume(Any())
+                    if (c.isActive) c.resume(Any())
                 }.addOnFailureListener {
-                    c.resumeWithException(it)
+                    if (c.isActive) c.resumeWithException(it)
                 }
             }
+            onProgress(index + 1, langList.size)
         }
     }
 
     private suspend fun downloadTranslationResources(langList: List<String>) {
+        val downloadJob = kotlinx.coroutines.currentCoroutineContext()[Job]
         val dialog = DialogView(context).apply {
             setTitle(context.getString(R.string.title_resources_downloading))
             setMessage(
                 context.getString(R.string.msg_wait_for_resources_downloading) +
-                        "\n\n${langList.joinToString(", ")}"
+                        "\n\n0/${langList.size}\n${langList.joinToString(", ")}"
             )
+            setIndeterminateDownloadProgress()
             setDialogType(DialogView.DialogType.CANCEL_ONLY)
+            onButtonCancelClicked = {
+                downloadJob?.cancel()
+            }
 
             attachToScreen()
         }
@@ -189,7 +202,12 @@ object GoogleMLKitTranslator : Translator {
         FirebaseEvent.logStartDownloadOCRFile(langList.joinToString(","), DOWNLOAD_SITE)
 
         try {
-            downloadResources(langList)
+            downloadResources(langList) { completed, total ->
+                dialog.postIndeterminateDownloadProgress(
+                    context.getString(R.string.msg_wait_for_resources_downloading) +
+                            "\n\n$completed/$total\n${langList.joinToString(", ")}",
+                )
+            }
 
             dialog.detachFromScreen()
             DialogView(context).apply {
@@ -199,6 +217,8 @@ object GoogleMLKitTranslator : Translator {
             }.attachToScreen()
 
             FirebaseEvent.logOCRFileDownloadFinished()
+        } catch (e: CancellationException) {
+            dialog.detachFromScreen()
         } catch (e: Exception) {
             FirebaseEvent.logException(e)
 

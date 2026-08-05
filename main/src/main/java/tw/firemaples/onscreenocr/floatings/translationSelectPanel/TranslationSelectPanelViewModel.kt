@@ -176,29 +176,42 @@ class TranslationSelectPanelViewModel(viewScope: CoroutineScope) :
             when (val recognizer = ocrLang.recognizer) {
                 TextRecognitionProviderType.Tesseract -> {
                     var cancelled = false
-                    val dialogJob = viewScope.launch {
-                        val downloadDialogResult = context.showDialog(
-                            title = "OCR model downloading",
-                            message = "Downloading OCR model: ${ocrLang.innerCode}[${langItem.displayName}]",
-                            dialogType = DialogView.DialogType.CANCEL_ONLY,
-                            cancelByClickingOutside = false,
-                        )
-                        if (!downloadDialogResult) {
+                    val dialog = DialogView(context).apply {
+                        setTitle("OCR model downloading")
+                        setMessage("Downloading OCR model: ${ocrLang.innerCode}[${langItem.displayName}]\n0%")
+                        setDownloadProgress(0)
+                        setDialogType(DialogView.DialogType.CANCEL_ONLY)
+                        setCancelByClickingOutside(false)
+                        onButtonCancelClicked = {
                             cancelled = true
                             ocrRepo.cancelDownloadingTessData()
                         }
+                        attachToScreen()
                     }
+
                     try {
-                        if (ocrRepo.downloadTessData(ocrLang.innerCode)) {
-                            dialogJob.cancel()
+                        if (ocrRepo.downloadTessData(ocrLang.innerCode) { downloaded, total ->
+                                if (total > 0) {
+                                    val progress = (downloaded * 100 / total).toInt()
+                                    dialog.setMessageAndProgress(
+                                        "Downloading OCR model: ${ocrLang.innerCode}[${langItem.displayName}]\n$progress%",
+                                        progress,
+                                    )
+                                } else {
+                                    dialog.postIndeterminateDownloadProgress(
+                                        "Downloading OCR model: ${ocrLang.innerCode}[${langItem.displayName}]",
+                                    )
+                                }
+                            }) {
+                            dialog.detachFromScreen()
                             TextRecognizer.invalidSupportLanguages()
                             return true
-                        } else {
-                            if (!cancelled) {
-                                context.showErrorDialog("Download OCR model failed with unknown error")
-                            }
+                        } else if (!cancelled) {
+                            dialog.detachFromScreen()
+                            context.showErrorDialog("Download OCR model failed with unknown error")
                         }
                     } catch (e: Exception) {
+                        dialog.detachFromScreen()
                         if (!cancelled) {
                             context.showErrorDialog("Download OCR model failed: ${e.message ?: e.localizedMessage}")
                         }

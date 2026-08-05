@@ -54,21 +54,28 @@ class OCRRepository {
     suspend fun downloadTessData(
         langCode: String,
         destFile: File = TesseractTextRecognizer.getTessDataFile(langCode),
+        onProgress: (downloadedBytes: Long, totalBytes: Long) -> Unit = { _, _ -> },
     ): Boolean =
         withContext(Dispatchers.IO) {
             try {
                 val call = ApiHub.tessDataDownloader.downloadFromGithub(langCode)
                 downloadingTessDataCall = call
-                val response = call.execute()
-                if (response.isSuccessful) {
-                    return@withContext response.body()?.saveToFile(destFile) == true
-                } else {
-                    val status = response.code()
-                    val error = response.errorBody()?.string()
-                    val msg = "Download Tesseract data failed, status: $status, error: $error"
-                    logger.warn(msg)
+                try {
+                    val response = call.execute()
+                    if (response.isSuccessful) {
+                        return@withContext response.body()?.saveToFile(destFile, onProgress) == true
+                    } else {
+                        val status = response.code()
+                        val error = response.errorBody()?.string()
+                        val msg = "Download Tesseract data failed, status: $status, error: $error"
+                        logger.warn(msg)
 
-                    throw Exception(msg)
+                        throw Exception(msg)
+                    }
+                } finally {
+                    if (downloadingTessDataCall === call) {
+                        downloadingTessDataCall = null
+                    }
                 }
             } catch (e: Exception) {
                 logger.warn("Download Tesseract data failed", e)
@@ -82,24 +89,61 @@ class OCRRepository {
     }
 
     @Throws(IOException::class)
-    suspend fun ResponseBody.saveToFile(destFile: File): Boolean =
+    suspend fun ResponseBody.saveToFile(
+        destFile: File,
+        onProgress: (downloadedBytes: Long, totalBytes: Long) -> Unit = { _, _ -> },
+    ): Boolean =
         withContext(Dispatchers.IO) {
-            val temp = ApiHub.tessDataTempFile
-            if (temp.exists() && !temp.delete()) {
-                logger.error("Deleting temporary tesseract data failed, path: $temp")
+            val parent = destFile.parentFile ?: run {
+                logger.error("Tesseract data destination has no parent, path: $destFile")
                 return@withContext false
             }
-
-            if (destFile.exists() && !destFile.delete()) {
-                logger.error("Deleting dest tesseract data failed, path: $destFile")
+            if (!parent.exists() && !parent.mkdirs()) {
+                logger.error("Creating tesseract data folder failed, path: $parent")
                 return@withContext false
             }
+            val temp = File.createTempFile(destFile.name, ".tmp", parent)
+            val totalBytes = contentLength()
+            var downloadedBytes = 0L
+            var lastProgress = -1
+            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+            var moved = false
 
-            byteStream().use { input ->
-                destFile.outputStream().use { output ->
-                    input.copyTo(output)
+            try {
+                byteStream().use { input ->
+                    temp.outputStream().use { output ->
+                        while (true) {
+                            val bytesRead = input.read(buffer)
+                            if (bytesRead == -1) break
+
+                            output.write(buffer, 0, bytesRead)
+                            downloadedBytes += bytesRead
+                            if (totalBytes > 0) {
+                                val progress = (downloadedBytes * 100 / totalBytes).toInt()
+                                if (progress != lastProgress) {
+                                    onProgress(downloadedBytes, totalBytes)
+                                    lastProgress = progress
+                                }
+                            } else if (downloadedBytes == bytesRead.toLong()) {
+                                onProgress(downloadedBytes, totalBytes)
+                            }
+                        }
+                    }
                 }
+
+                if (destFile.exists() && !destFile.delete()) {
+                    logger.error("Deleting dest tesseract data failed, path: $destFile")
+                    return@withContext false
+                }
+                if (!temp.renameTo(destFile)) {
+                    logger.error("Moving downloaded tesseract data failed, path: $destFile")
+                    return@withContext false
+                }
+                moved = true
+            } finally {
+                if (!moved) temp.delete()
             }
+
             return@withContext true
         }
 }
