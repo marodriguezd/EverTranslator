@@ -12,6 +12,8 @@ import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
 import java.util.Locale
 import tw.firemaples.onscreenocr.R
+import androidx.core.graphics.ColorUtils
+import com.google.android.material.card.MaterialCardView
 import tw.firemaples.onscreenocr.databinding.FloatingResultViewBinding
 import tw.firemaples.onscreenocr.databinding.ViewResultPanelBinding
 import tw.firemaples.onscreenocr.floatings.base.FloatingView
@@ -82,6 +84,8 @@ class ResultView(context: Context) : FloatingView(context) {
      * are all removed, leaving just the semi-transparent card with the translation.
      */
     private fun applyTranslationOnlyMode() {
+        applyTranslationTextStyle()
+
         if (!SettingManager.translationOnlyMode) return
 
         // No full-screen dimming: the user keeps seeing the app underneath.
@@ -97,6 +101,30 @@ class ResultView(context: Context) : FloatingView(context) {
 
         // Bounding boxes over the source text are noise in this mode.
         binding.viewTextBoundingBoxView.visibility = View.GONE
+    }
+
+    /**
+     * Applies the user-configurable appearance of the translated text: fully opaque
+     * colour and font size for the text, and a separate translucency for the panel
+     * behind it, so the text never becomes hard to read.
+     */
+    private fun applyTranslationTextStyle() {
+        val textColor = SettingManager.translationTextColor
+        val textSize = SettingManager.translationTextSize
+
+        binding.resultPanel.tvTranslatedText.apply {
+            setTextColor(textColor)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize)
+        }
+
+        // Panel translucency is applied to the card only, never to the text.
+        val alpha = (SettingManager.translationPanelOpacity * 255 / 100)
+            .coerceIn(0, 255)
+        (viewResultWindow as? MaterialCardView)?.apply {
+            setCardBackgroundColor(
+                ColorUtils.setAlphaComponent(cardBackgroundColor.defaultColor, alpha)
+            )
+        }
     }
 
     private fun ViewResultPanelBinding.setViews() {
@@ -121,7 +149,13 @@ class ResultView(context: Context) : FloatingView(context) {
             } else {
                 val (text, color) = it
                 tvTranslatedText.text = text
-                tvTranslatedText.setTextColor(ContextCompat.getColor(context, color))
+                // The user-chosen colour wins over the default result colour, except for
+                // error/notice colours which must stay recognisable.
+                if (color == R.color.foregroundSecond) {
+                    tvTranslatedText.setTextColor(SettingManager.translationTextColor)
+                } else {
+                    tvTranslatedText.setTextColor(ContextCompat.getColor(context, color))
+                }
             }
 
             reposition()
@@ -161,7 +195,10 @@ class ResultView(context: Context) : FloatingView(context) {
         viewModel.fontSize.observe(lifecycleOwner) {
             tvOcrText.setTextSize(TypedValue.COMPLEX_UNIT_SP, it)
             tvWordBreakOcrText.setTextSize(TypedValue.COMPLEX_UNIT_SP, it)
-            tvTranslatedText.setTextSize(TypedValue.COMPLEX_UNIT_SP, it)
+            // The translated text has its own dedicated size setting.
+            tvTranslatedText.setTextSize(
+                TypedValue.COMPLEX_UNIT_SP, SettingManager.translationTextSize
+            )
         }
 
         viewModel.displayTextInfoSearchView.observe(lifecycleOwner) {

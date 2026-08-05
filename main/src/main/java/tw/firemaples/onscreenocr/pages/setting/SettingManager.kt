@@ -38,6 +38,9 @@ object SettingManager {
     private const val PREF_CONTINUOUS_TRANSLATION_INTERVAL =
         "pref_continuous_translation_interval"
     private const val PREF_TRANSLATION_ONLY_MODE = "pref_translation_only_mode"
+    private const val PREF_TRANSLATION_TEXT_COLOR = "pref_translation_text_color"
+    private const val PREF_TRANSLATION_TEXT_SIZE = "pref_translation_text_size"
+    private const val PREF_TRANSLATION_PANEL_OPACITY = "pref_translation_panel_opacity"
 
     private const val PREF_SAVE_LAST_SELECTION_AREA = "pref_save_last_selection_area"
     private const val PREF_EXIT_APP_WHILE_SPEN_INSERTED = "pref_exit_app_while_spen_inserted"
@@ -134,6 +137,34 @@ object SettingManager {
      */
     val translationOnlyMode: Boolean
         get() = preferences.getBoolean(PREF_TRANSLATION_ONLY_MODE, false)
+
+    /**
+     * Colour of the translated text. Always fully opaque: only the panel behind it is
+     * translucent, so the text itself stays perfectly readable.
+     */
+    val translationTextColor: Int
+        get() {
+            val stored = preferences.getString(PREF_TRANSLATION_TEXT_COLOR, null)
+                ?: DEFAULT_TRANSLATION_TEXT_COLOR
+            val parsed = try {
+                android.graphics.Color.parseColor(stored)
+            } catch (e: Exception) {
+                logger.warn(t = e)
+                android.graphics.Color.parseColor(DEFAULT_TRANSLATION_TEXT_COLOR)
+            }
+            // Force full alpha regardless of what was stored.
+            return parsed or 0xFF000000.toInt()
+        }
+
+    /** Font size of the translated text, in sp. */
+    val translationTextSize: Float
+        get() = preferences.getInt(PREF_TRANSLATION_TEXT_SIZE, 18).coerceIn(8, 48).toFloat()
+
+    /** Opacity of the panel behind the translated text, 0 (invisible) to 100 (solid). */
+    val translationPanelOpacity: Int
+        get() = preferences.getInt(PREF_TRANSLATION_PANEL_OPACITY, 70).coerceIn(0, 100)
+
+    private const val DEFAULT_TRANSLATION_TEXT_COLOR = "#FFFFFFFF"
 
     val saveLastSelectionArea: Boolean
         get() = preferences.getBoolean(PREF_SAVE_LAST_SELECTION_AREA, true)
