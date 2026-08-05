@@ -117,6 +117,17 @@ abstract class FloatingView(protected val context: Context) {
     var attached: Boolean = false
         private set
 
+    /**
+     * Temporarily hides the view without detaching it, so it is not captured by
+     * [tw.firemaples.onscreenocr.screenshot.ScreenExtractor] during continuous translation.
+     * Detaching/attaching instead would reset the view state and make it flicker.
+     */
+    @MainThread
+    fun setHiddenForCapture(hidden: Boolean) {
+        if (!attached) return
+        rootView.visibility = if (hidden) View.INVISIBLE else View.VISIBLE
+    }
+
     var onAttached: (() -> Unit)? = null
     var onDetached: (() -> Unit)? = null
 

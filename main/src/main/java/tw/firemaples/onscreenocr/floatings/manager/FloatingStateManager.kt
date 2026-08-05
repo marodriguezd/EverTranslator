@@ -39,6 +39,12 @@ import tw.firemaples.onscreenocr.utils.Utils
 import tw.firemaples.onscreenocr.utils.setReusable
 
 object FloatingStateManager {
+    /**
+     * Time given to the window manager to actually hide our own overlays before taking
+     * a screenshot during continuous translation.
+     */
+    private const val HIDE_OVERLAY_DELAY_MS = 120L
+
     private val logger: Logger by lazy { Logger(FloatingStateManager::class) }
     private val context: Context by lazy { Utils.context }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -201,7 +207,7 @@ object FloatingStateManager {
                     logger.debug("Remove CJK spaces: $result")
                 }
                 FirebaseEvent.logOCRFinished(recognizer.name)
-                lastRecognizedText = result.result.trim()
+                lastRecognizedText = result.result.normalizeForComparison()
                 resultView.textRecognized(result, parent, selected, croppedBitmap)
                 startTranslation(result)
             } catch (e: Exception) {
@@ -357,12 +363,24 @@ object FloatingStateManager {
     }
 
     private suspend fun runContinuousPass(parent: Rect, selected: Rect) {
+        // The result panel and the main bar float ON TOP of the captured area. If they
+        // stay visible the screenshot contains our own overlay and the OCR feeds on its
+        // own output, producing garbage that compounds on every pass. Hide them first.
+        resultView.setHiddenForCapture(true)
+        mainBar.setHiddenForCapture(true)
+
+        // Give the window manager a frame to actually remove them from the screen.
+        delay(HIDE_OVERLAY_DELAY_MS)
+
         val bitmap = try {
             ScreenExtractor.extractBitmapFromScreen(parentRect = parent, cropRect = selected)
         } catch (e: Exception) {
             // A transient capture failure should not kill the loop.
             logger.warn(t = e)
             return
+        } finally {
+            resultView.setHiddenForCapture(false)
+            mainBar.setHiddenForCapture(false)
         }
 
         val result = try {
@@ -386,7 +404,7 @@ object FloatingStateManager {
             return
         }
 
-        val newText = result.result.trim()
+        val newText = result.result.normalizeForComparison()
 
         if (newText.isEmpty() || newText == lastRecognizedText) {
             // Nothing changed on screen: skip recognition display and translation entirely.
@@ -403,6 +421,13 @@ object FloatingStateManager {
         resultView.textRecognized(result, parent, selected, bitmap)
         startTranslation(result)
     }
+
+    /**
+     * Normalizes OCR output before comparing two passes: collapses whitespace so that
+     * minor recognition jitter does not trigger a pointless re-translation.
+     */
+    private fun String.normalizeForComparison(): String =
+        trim().replace(Regex("\\s+"), " ")
 
     private fun stopContinuousTranslation() {
         continuousJob?.cancel()
