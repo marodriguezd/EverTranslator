@@ -5,12 +5,15 @@ import android.graphics.Bitmap
 import android.graphics.Rect
 import java.io.IOException
 import kotlin.reflect.KClass
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import tw.firemaples.onscreenocr.R
@@ -69,6 +72,15 @@ object FloatingStateManager {
     private var parentRect: Rect? = null
     private var selectedRect: Rect? = null
     private var croppedBitmap: Bitmap? = null
+
+    /** Job running the continuous (subtitle) translation loop, if any. */
+    private var continuousJob: Job? = null
+
+    /** Last OCR text that was actually translated, used to skip redundant work. */
+    private var lastRecognizedText: String? = null
+
+    val isContinuousModeRunning: Boolean
+        get() = continuousJob?.isActive == true
 
     fun showMainBar() {
         if (isMainBarAttached) return
@@ -189,6 +201,7 @@ object FloatingStateManager {
                     logger.debug("Remove CJK spaces: $result")
                 }
                 FirebaseEvent.logOCRFinished(recognizer.name)
+                lastRecognizedText = result.result.trim()
                 resultView.textRecognized(result, parent, selected, croppedBitmap)
                 startTranslation(result)
             } catch (e: Exception) {
@@ -298,9 +311,107 @@ object FloatingStateManager {
             changeState(State.ResultDisplaying)
 
             resultView.textTranslated(result)
+
+            startContinuousTranslationIfNeeded()
         }
 
+    /**
+     * Subtitle mode: once a result is displayed, keep re-capturing the same area on an
+     * interval and refresh the translation. If the recognized text has not changed since
+     * the previous pass, nothing is re-translated so no extra CPU/network is consumed.
+     */
+    private fun startContinuousTranslationIfNeeded() {
+        if (!SettingManager.enableContinuousTranslation) return
+        if (isContinuousModeRunning) return
+
+        val parent = parentRect ?: return
+        val selected = selectedRect ?: return
+
+        continuousJob = scope.launch {
+            logger.debug("Continuous translation started")
+            try {
+                while (isActive) {
+                    delay(SettingManager.continuousTranslationIntervalMs)
+
+                    when (currentState) {
+                        State.ResultDisplaying -> runContinuousPass(parent, selected)
+
+                        // A pass is still being translated: wait for the next tick
+                        // instead of killing the loop.
+                        State.TextTranslating, State.TextRecognizing -> Unit
+
+                        else -> {
+                            logger.debug("Continuous translation stops, state is $currentState")
+                            break
+                        }
+                    }
+                }
+            } catch (e: CancellationException) {
+                // Normal stop
+            } catch (e: Exception) {
+                logger.warn(t = e)
+            } finally {
+                logger.debug("Continuous translation finished")
+            }
+        }
+    }
+
+    private suspend fun runContinuousPass(parent: Rect, selected: Rect) {
+        val bitmap = try {
+            ScreenExtractor.extractBitmapFromScreen(parentRect = parent, cropRect = selected)
+        } catch (e: Exception) {
+            // A transient capture failure should not kill the loop.
+            logger.warn(t = e)
+            return
+        }
+
+        val result = try {
+            val recognizer = TextRecognizer.getRecognizer(selectedOCRProvider)
+            var recognized = withContext(Dispatchers.Default) {
+                recognizer.recognize(
+                    TextRecognizer.getLanguage(selectedOCRLang, selectedOCRProvider)!!,
+                    bitmap,
+                )
+            }
+            if (SettingManager.removeSpacesInCJK) {
+                val cjkLang = arrayOf("zh", "ja", "ko")
+                if (cjkLang.contains(selectedOCRLang.split("-").getOrNull(0))) {
+                    recognized = recognized.copy(result = recognized.result.replace(" ", ""))
+                }
+            }
+            recognized
+        } catch (e: Exception) {
+            logger.warn(t = e)
+            bitmap.setReusable()
+            return
+        }
+
+        val newText = result.result.trim()
+
+        if (newText.isEmpty() || newText == lastRecognizedText) {
+            // Nothing changed on screen: skip recognition display and translation entirely.
+            logger.debug("Continuous pass skipped, text unchanged")
+            bitmap.setReusable()
+            return
+        }
+
+        lastRecognizedText = newText
+
+        croppedBitmap?.setReusable()
+        croppedBitmap = bitmap
+
+        resultView.textRecognized(result, parent, selected, bitmap)
+        startTranslation(result)
+    }
+
+    private fun stopContinuousTranslation() {
+        continuousJob?.cancel()
+        continuousJob = null
+        lastRecognizedText = null
+    }
+
     private fun showError(error: String) {
+        stopContinuousTranslation()
         scope.launch {
             changeState(State.ErrorDisplaying(error))
             logger.error(error)
@@ -311,6 +422,7 @@ object FloatingStateManager {
 
     private fun backToIdle() =
         scope.launch {
+            stopContinuousTranslation()
             if (currentState != State.Idle) changeState(State.Idle)
             croppedBitmap?.setReusable()
             resultView.backToIdle()

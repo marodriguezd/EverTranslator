@@ -34,6 +34,10 @@ object SettingManager {
     private const val PREF_HIDE_RECOGNIZED_RESULT_AFTER_TRANSLATED =
         "pref_hide_recognized_result_after_translated"
 
+    private const val PREF_ENABLE_CONTINUOUS_TRANSLATION = "pref_enable_continuous_translation"
+    private const val PREF_CONTINUOUS_TRANSLATION_INTERVAL =
+        "pref_continuous_translation_interval"
+
     private const val PREF_SAVE_LAST_SELECTION_AREA = "pref_save_last_selection_area"
     private const val PREF_EXIT_APP_WHILE_SPEN_INSERTED = "pref_exit_app_while_spen_inserted"
 
@@ -107,6 +111,21 @@ object SettingManager {
 
     val hideRecognizedResultAfterTranslated: Boolean
         get() = preferences.getBoolean(PREF_HIDE_RECOGNIZED_RESULT_AFTER_TRANSLATED, false)
+
+    /**
+     * When enabled, the selected area is re-captured, re-recognized and re-translated
+     * periodically (subtitle mode) instead of only once.
+     */
+    var enableContinuousTranslation: Boolean
+        get() = preferences.getBoolean(PREF_ENABLE_CONTINUOUS_TRANSLATION, false)
+        set(value) {
+            preferences.edit { putBoolean(PREF_ENABLE_CONTINUOUS_TRANSLATION, value) }
+        }
+
+    /** Delay between two continuous-translation passes, in milliseconds. */
+    val continuousTranslationIntervalMs: Long
+        get() = preferences.getInt(PREF_CONTINUOUS_TRANSLATION_INTERVAL, 2)
+            .coerceIn(1, 30) * 1000L
 
     val saveLastSelectionArea: Boolean
         get() = preferences.getBoolean(PREF_SAVE_LAST_SELECTION_AREA, true)
