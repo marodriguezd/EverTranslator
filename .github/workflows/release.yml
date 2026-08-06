@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name for the release (e.g. v3.1.25)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Create GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build APKs with Gradle
+        run: ./gradlew assembleDevDebug assembleDevRelease
+
+      - name: Prepare Release Artifacts
+        id: prepare_artifacts
+        run: |
+          mkdir -p release_assets
+          
+          # Extract version or tag name
+          TAG_NAME="${{ inputs.tag_name || github.ref_name }}"
+          echo "Tag name: ${TAG_NAME}"
+          
+          DEBUG_APK="main/build/outputs/apk/dev/debug/main-dev-debug.apk"
+          RELEASE_APK="main/build/outputs/apk/dev/release/main-dev-release.apk"
+          
+          if [ -f "$DEBUG_APK" ]; then
+            cp "$DEBUG_APK" "release_assets/EverTranslator-${TAG_NAME}-dev-debug.apk"
+          fi
+          
+          if [ -f "$RELEASE_APK" ]; then
+            cp "$RELEASE_APK" "release_assets/EverTranslator-${TAG_NAME}-dev-release.apk"
+          fi
+          
+          echo "Release assets created:"
+          ls -la release_assets/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
+          name: Release ${{ inputs.tag_name || github.ref_name }}
+          files: release_assets/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
