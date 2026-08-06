@@ -18,6 +18,7 @@ jobs:
   release:
     name: Build & Create GitHub Release
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout repository
@@ -41,23 +42,30 @@ jobs:
       - name: Prepare Release Artifacts
         id: prepare_artifacts
         run: |
+          set -euo pipefail
           mkdir -p release_assets
-          
-          # Extract version or tag name
+
           TAG_NAME="${{ inputs.tag_name || github.ref_name }}"
           echo "Tag name: ${TAG_NAME}"
-          
-          DEBUG_APK="main/build/outputs/apk/dev/debug/main-dev-debug.apk"
-          RELEASE_APK="main/build/outputs/apk/dev/release/main-dev-release.apk"
-          
-          if [ -f "$DEBUG_APK" ]; then
-            cp "$DEBUG_APK" "release_assets/EverTranslator-${TAG_NAME}-dev-debug.apk"
+
+          echo "APKs produced by the build:"
+          find main/build/outputs/apk -name '*.apk' -print
+
+          # The dev flavour is not signed, so the release APK is emitted as
+          # 'main-dev-release-unsigned.apk'. Copy whatever the build actually
+          # produced instead of assuming a fixed file name.
+          found=0
+          for apk in $(find main/build/outputs/apk -name '*.apk' | sort); do
+            base="$(basename "$apk" .apk)"
+            cp "$apk" "release_assets/EverTranslator-${TAG_NAME}-${base#main-}.apk"
+            found=1
+          done
+
+          if [ "$found" -eq 0 ]; then
+            echo "::error::No APK was produced by the build"
+            exit 1
           fi
-          
-          if [ -f "$RELEASE_APK" ]; then
-            cp "$RELEASE_APK" "release_assets/EverTranslator-${TAG_NAME}-dev-release.apk"
-          fi
-          
+
           echo "Release assets created:"
           ls -la release_assets/
 
