@@ -54,10 +54,13 @@ class ResultView(context: Context) : FloatingView(context) {
     override val enableHomeButtonWatcher: Boolean
         get() = true
 
-    // In translation-only mode the overlay is purely informative, so touches must reach
-    // the app underneath (scroll the video, tap subtitles, etc.).
+    // Touch pass-through is only wanted while subtitles are being refreshed continuously:
+    // there the overlay is purely informative and must not block the app underneath.
+    // For a one-shot translation the panel has to stay interactive so the user can
+    // scroll a long translation, so the window keeps receiving touches.
     override val passThroughTouches: Boolean
-        get() = SettingManager.translationOnlyMode
+        get() = SettingManager.translationOnlyMode &&
+                SettingManager.enableContinuousTranslation
 
     private val viewModel: ResultViewModel by lazy { ResultViewModel(viewScope) }
 
