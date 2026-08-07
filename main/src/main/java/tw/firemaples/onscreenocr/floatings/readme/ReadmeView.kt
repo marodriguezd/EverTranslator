@@ -15,6 +15,7 @@ class ReadmeView(context: Context) :
     init {
         setTitle(context.getString(R.string.title_guide))
         setDialogType(DialogType.CONFIRM_ONLY)
+        setCancelByClickingOutside(true)
         setContentView(View.inflate(context, R.layout.view_help, null))
     }
 }

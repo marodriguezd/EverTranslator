@@ -49,6 +49,7 @@
                 android:lineSpacingExtra="4dp"
                 android:visibility="gone"
                 app:layout_constrainedHeight="true"
+                app:layout_constraintBottom_toTopOf="@id/progress_download"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_title"
@@ -65,6 +66,7 @@
                 android:layout_marginTop="16dp"
                 android:max="100"
                 android:visibility="gone"
+                app:layout_constraintBottom_toTopOf="@id/view_contentViewWrapper"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_message"
@@ -74,29 +76,24 @@
             <FrameLayout
                 android:id="@+id/view_contentViewWrapper"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_marginHorizontal="24dp"
                 android:layout_marginTop="16dp"
                 android:visibility="gone"
-                app:layout_constrainedHeight="true"
+                app:layout_constraintBottom_toTopOf="@id/bt_ok"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHeight_default="wrap"
+                app:layout_constraintHeight_max="420dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/progress_download"
                 app:layout_goneMarginTop="16dp"
                 tools:visibility="visible" />
 
-            <androidx.constraintlayout.widget.Barrier
-                android:id="@+id/line_topOfButtons"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                app:barrierDirection="bottom"
-                app:constraint_referenced_ids="tv_message,progress_download,view_contentViewWrapper" />
-
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/bt_cancel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="16dp"
                 android:background="@null"
@@ -108,14 +105,13 @@
                 android:textColor="@color/borderlessButtonText"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/bt_ok"
-                app:layout_constraintTop_toBottomOf="@id/line_topOfButtons"
                 tools:targetApi="m" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/bt_ok"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginEnd="24dp"
                 android:layout_marginBottom="16dp"
                 android:background="@null"
@@ -127,7 +123,6 @@
                 android:textColor="@color/borderlessButtonText"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/line_topOfButtons"
                 tools:targetApi="m" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
