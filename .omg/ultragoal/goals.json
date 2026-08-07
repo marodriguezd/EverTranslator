@@ -1,0 +1,23 @@
+[
+  {
+    "id": "GOAL-01",
+    "description": "Investigate Android 14 targetSdk 34 MediaProjection requirements & root cause of crash",
+    "status": "completed",
+    "verificationCriteria": "Identify missing Android 14 FOREGROUND_SERVICE_MEDIA_PROJECTION permission & FGS start sequence",
+    "evidence": "Identified missing FOREGROUND_SERVICE_MEDIA_PROJECTION permission in AndroidManifest.xml and startService FGS timing on targetSdk 34"
+  },
+  {
+    "id": "GOAL-02",
+    "description": "Apply Android 14 MediaProjection FGS fixes to AndroidManifest.xml and ViewHolderService.kt",
+    "status": "completed",
+    "verificationCriteria": "Manifest contains FOREGROUND_SERVICE_MEDIA_PROJECTION and ViewHolderService correctly starts FGS",
+    "evidence": "Added FOREGROUND_SERVICE_MEDIA_PROJECTION permission and updated ViewHolderService to call ContextCompat.startForegroundService and startForeground in onCreate"
+  },
+  {
+    "id": "GOAL-03",
+    "description": "Commit, push to exp/material3-2026-optimization, and trigger CI build on GitHub Actions",
+    "status": "in-progress",
+    "verificationCriteria": "GitHub Actions CI build passes and produces main-dev-debug.apk",
+    "evidence": ""
+  }
+]

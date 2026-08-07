@@ -47,9 +47,10 @@ class ViewHolderService : Service() {
         }
 
         private fun startAction(context: Context, action: String) {
-            context.startService(Intent(context, ViewHolderService::class.java).apply {
+            val intent = Intent(context, ViewHolderService::class.java).apply {
                 this.action = action
-            })
+            }
+            ContextCompat.startForegroundService(context, intent)
         }
     }
 
@@ -61,6 +62,7 @@ class ViewHolderService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        startForeground()
         floatingStateListenerJob = CoroutineScope(Dispatchers.Main).launch {
             FloatingStateManager.showingStateChangedFlow.collect { startForeground() }
         }
