@@ -368,6 +368,7 @@ object ScreenExtractor {
         }
 
     private fun Bitmap.isWholeBlack(): Boolean {
+        if (isRecycled) return false
         val w = width
         val h = height
         if (w <= 0 || h <= 0) return true

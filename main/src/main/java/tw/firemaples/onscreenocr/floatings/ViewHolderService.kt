@@ -50,7 +50,16 @@ class ViewHolderService : Service() {
             val intent = Intent(context, ViewHolderService::class.java).apply {
                 this.action = action
             }
-            ContextCompat.startForegroundService(context, intent)
+            try {
+                ContextCompat.startForegroundService(context, intent)
+            } catch (e: Exception) {
+                logger.warn("startForegroundService failed, trying startService", e)
+                try {
+                    context.startService(intent)
+                } catch (e2: Exception) {
+                    logger.error("startService failed completely", e2)
+                }
+            }
         }
     }
 
@@ -126,17 +135,24 @@ class ViewHolderService : Service() {
     }
 
     private fun startForeground() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(
-                ONGOING_NOTIFICATION_ID,
-                createNotification(!FloatingStateManager.isMainBarAttached),
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION,
-            )
-        } else {
-            startForeground(
-                ONGOING_NOTIFICATION_ID,
-                createNotification(!FloatingStateManager.isMainBarAttached),
-            )
+        val notification = createNotification(!FloatingStateManager.isMainBarAttached)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(
+                    ONGOING_NOTIFICATION_ID,
+                    notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION,
+                )
+            } else {
+                startForeground(ONGOING_NOTIFICATION_ID, notification)
+            }
+        } catch (e: Exception) {
+            logger.warn("startForeground with MEDIA_PROJECTION failed, falling back to basic startForeground", e)
+            try {
+                startForeground(ONGOING_NOTIFICATION_ID, notification)
+            } catch (e2: Exception) {
+                logger.error("basic startForeground failed", e2)
+            }
         }
     }
 
