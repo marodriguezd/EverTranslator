@@ -177,8 +177,8 @@ class TranslationSelectPanelViewModel(viewScope: CoroutineScope) :
                 TextRecognitionProviderType.Tesseract -> {
                     var cancelled = false
                     val dialog = DialogView(context).apply {
-                        setTitle("OCR model downloading")
-                        setMessage("Downloading OCR model: ${ocrLang.innerCode}[${langItem.displayName}]\n0%")
+                        setTitle(context.getString(R.string.title_resources_downloading))
+                        setMessage("${context.getString(R.string.msg_downloading_current_model, langItem.displayName)}\n0%")
                         setDownloadProgress(0)
                         setDialogType(DialogView.DialogType.CANCEL_ONLY)
                         setCancelByClickingOutside(false)
@@ -194,12 +194,12 @@ class TranslationSelectPanelViewModel(viewScope: CoroutineScope) :
                                 if (total > 0) {
                                     val progress = (downloaded * 100 / total).toInt()
                                     dialog.setMessageAndProgress(
-                                        "Downloading OCR model: ${ocrLang.innerCode}[${langItem.displayName}]\n$progress%",
+                                        "${context.getString(R.string.msg_downloading_current_model, langItem.displayName)}\n$progress%",
                                         progress,
                                     )
                                 } else {
                                     dialog.postIndeterminateDownloadProgress(
-                                        "Downloading OCR model: ${ocrLang.innerCode}[${langItem.displayName}]",
+                                        context.getString(R.string.msg_downloading_current_model, langItem.displayName),
                                     )
                                 }
                             }) {

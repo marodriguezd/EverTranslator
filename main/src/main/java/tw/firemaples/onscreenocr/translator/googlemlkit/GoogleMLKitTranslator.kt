@@ -212,13 +212,16 @@ object GoogleMLKitTranslator : Translator {
     ): String = buildString {
         append(context.getString(R.string.msg_downloading_language_models))
         append("\n\n")
+        val total = langList.size
+        val percent = if (total > 0) completed * 100 / total else 0
         append(
             context.getString(
                 R.string.msg_download_progress_count,
-                (currentIndex + 1).coerceAtMost(langList.size),
-                langList.size,
+                (currentIndex + 1).coerceAtMost(total),
+                total,
             )
         )
+        append(" ($percent%)")
         langList.getOrNull(currentIndex)?.let {
             append("\n")
             append(context.getString(R.string.msg_downloading_current_model, displayNameOf(it)))
