@@ -334,7 +334,15 @@ class ResultView(context: Context) : FloatingView(context) {
             viewRoot.updateViewLayout(viewResultWindow, layoutParams)
 
             viewRoot.post {
-                viewResultWindow.visibility = View.VISIBLE
+                val hasTranslatedText = !binding.resultPanel.tvTranslatedText.text.isNullOrBlank()
+                val shouldShow = if (SettingManager.translationOnlyMode) {
+                    hasTranslatedText
+                } else if (SettingManager.hideRecognizedResultAfterTranslated) {
+                    hasTranslatedText || viewModel.displayRecognitionBlock.value == true
+                } else {
+                    true
+                }
+                viewResultWindow.visibility = if (shouldShow) View.VISIBLE else View.INVISIBLE
             }
         }
     }
