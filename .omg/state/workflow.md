@@ -12,14 +12,16 @@ Create an experimental branch (`exp/material3-2026-optimization`), refactor core
 ## Workflow Execution Steps
 1. **Branch Setup**: Branch `exp/material3-2026-optimization` created and checked out.
 2. **Material 3 Theme & Palette Upgrade**:
-   - Upgrade Material design library dependency in `main/build.gradle`.
-   - Implement M3 theme parents (`Theme.Material3.DayNight.NoActionBar` / `Theme.Material3.DayNight`).
+   - Upgraded Material design library dependency in `main/build.gradle` (v1.11.0).
+   - Implemented M3 theme parents (`Theme.Material3.DayNight.NoActionBar` / `Theme.Material3.DayNight`).
    - Setup Material 3 dynamic color tokens (Light & Dark mode palettes) in XML color resources.
-   - Apply dynamic colors dynamically on Android 12+ (API 31+) in `CoreApplication` / `LaunchActivity`.
+   - Applied dynamic colors dynamically on Android 12+ (`DynamicColors.applyToActivitiesIfAvailable`) in `CoreApplication.kt`.
 3. **Source Code Optimization & Refactoring**:
-   - Refactor Kotlin singletons / repositories / utils using modern idiomatic Kotlin features.
-   - Optimize BitmapCache & coroutine scopes.
-   - Clean up deprecated APIs and unused imports.
+   - Refactored `ScreenExtractor.kt` to use fast 32x grid sampling and row-buffer `getPixels` for black screen detection (eliminates JNI overhead).
+   - Cleaned up `BitmapCache.kt` to purge garbage-collected / recycled `SoftReference` instances during lookup.
+   - Updated `Utils.kt` with `PackageManager.PackageInfoFlags` compatibility for Android 13+ (API 33+).
+   - Upgraded layout buttons to `MaterialButton`.
 4. **Verification & CI**:
-   - Commit & push changes to remote repository `exp/material3-2026-optimization`.
-   - Verify build status via `gh run list` / `gh run view`.
+   - Committed and pushed changes to remote branch `exp/material3-2026-optimization`.
+   - Updated `.github/workflows/ci.yml` to run CI on `exp/**` branches.
+   - GitHub Actions CI workflow triggered and active.
