@@ -58,7 +58,15 @@ object Utils {
     @Throws(PackageManager.NameNotFoundException::class)
     fun getPackageInfo(packageName: String): PackageInfo? =
         try {
-            context.packageManager.getPackageInfo(packageName, 0)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.packageManager.getPackageInfo(
+                    packageName,
+                    PackageManager.PackageInfoFlags.of(0)
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.getPackageInfo(packageName, 0)
+            }
         } catch (e: Exception) {
             logger.warn(t = e)
             null

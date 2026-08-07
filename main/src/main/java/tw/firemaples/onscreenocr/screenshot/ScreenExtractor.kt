@@ -368,15 +368,25 @@ object ScreenExtractor {
         }
 
     private fun Bitmap.isWholeBlack(): Boolean {
-        for (x in 0 until width) {
-            for (y in 0 until height) {
-                val color = getPixel(x, y)
-                val red = Color.red(color)
-                val green = Color.green(color)
-                val blue = Color.blue(color)
-                val alpha = Color.alpha(color)
-                if (red or green or blue or alpha != 0)
-                    return false
+        val w = width
+        val h = height
+        if (w <= 0 || h <= 0) return true
+
+        // Fast grid sampling: non-black screens return false within first few samples
+        val stepX = (w / 32).coerceAtLeast(1)
+        val stepY = (h / 32).coerceAtLeast(1)
+        for (x in 0 until w step stepX) {
+            for (y in 0 until h step stepY) {
+                if (getPixel(x, y) != 0) return false
+            }
+        }
+
+        // Full scan fallback using row array buffers to eliminate JNI getPixel overhead
+        val pixels = IntArray(w)
+        for (y in 0 until h) {
+            getPixels(pixels, 0, w, 0, y, w, 1)
+            for (i in 0 until w) {
+                if (pixels[i] != 0) return false
             }
         }
 

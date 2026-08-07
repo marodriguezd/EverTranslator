@@ -8,19 +8,48 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <!-- Material Design 3 (2026) Light Color Tokens -->
+    <color name="m3_primary">#5C52A4</color>
+    <color name="m3_on_primary">#FFFFFF</color>
+    <color name="m3_primary_container">#E3DFFF</color>
+    <color name="m3_on_primary_container">#190962</color>
+
+    <color name="m3_secondary">#4A6278</color>
+    <color name="m3_on_secondary">#FFFFFF</color>
+    <color name="m3_secondary_container">#CDE7FF</color>
+    <color name="m3_on_secondary_container">#001E36</color>
+
+    <color name="m3_tertiary">#705575</color>
+    <color name="m3_on_tertiary">#FFFFFF</color>
+    <color name="m3_tertiary_container">#FAD8FD</color>
+    <color name="m3_on_tertiary_container">#28132E</color>
+
+    <color name="m3_error">#BA1A1A</color>
+    <color name="m3_on_error">#FFFFFF</color>
+    <color name="m3_error_container">#FFDAD6</color>
+    <color name="m3_on_error_container">#410002</color>
+
+    <color name="m3_background">#FEF7FF</color>
+    <color name="m3_on_background">#1D1B20</color>
+    <color name="m3_surface">#FEF7FF</color>
+    <color name="m3_on_surface">#1D1B20</color>
+    <color name="m3_surface_variant">#E7E0EC</color>
+    <color name="m3_on_surface_variant">#49454F</color>
+    <color name="m3_outline">#7A757F</color>
+
     <color name="appIconColor">#00695c</color>
 
     <color name="spinnerBorderColor">@color/md_grey_700</color>
 
-    <color name="background">@color/md_white_1000</color>
-    <color name="foreground">#de000000</color>
+    <color name="background">@color/m3_background</color>
+    <color name="foreground">@color/m3_on_background</color>
     <color name="foregroundSecond">#99000000</color>
     <color name="foregroundDisable">#61000000</color>
-    <color name="alert">@color/md_red_500</color>
+    <color name="alert">@color/m3_error</color>
 
     <color name="dialogOutside">#88000000</color>
-    <color name="borderlessButtonText">#2196F3</color>
-    <color name="listItemChecked">@color/md_blue_300</color>
+    <color name="borderlessButtonText">#5C52A4</color>
+    <color name="listItemChecked">@color/m3_primary_container</color>
 
     <color name="circlingView_background">#66000000</color>
     <color name="circlingView_circlingBox">#6629B6F6</color>

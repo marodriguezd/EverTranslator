@@ -46,32 +46,27 @@ object BitmapCache {
     fun getBitmapFromReusableSet(
         width: Int, height: Int, config: Config?, fixedSize: Boolean,
     ): Bitmap? {
-        reusableBitmaps
-            .takeIf { it.isNotEmpty() }
-            ?.also { reusableBitmaps ->
-                synchronized(reusableBitmaps) {
-                    val iterator = reusableBitmaps.iterator()
-                    while (iterator.hasNext()) {
-                        iterator.next().get()?.also { item ->
-                            if (item.isMutable) {
-                                if (item.canUseForInBitmap(
-                                        width = width,
-                                        height = height,
-                                        config = config,
-                                        fixedSize = fixedSize,
-                                    )
-                                ) {
-                                    iterator.remove()
-                                    return item
-                                }
-                            } else {
-                                // remove recycled item
-                                iterator.remove()
-                            }
-                        }
-                    }
+        synchronized(reusableBitmaps) {
+            val iterator = reusableBitmaps.iterator()
+            while (iterator.hasNext()) {
+                val softRef = iterator.next()
+                val item = softRef.get()
+                if (item == null || item.isRecycled) {
+                    iterator.remove()
+                    continue
+                }
+                if (item.isMutable && item.canUseForInBitmap(
+                        width = width,
+                        height = height,
+                        config = config,
+                        fixedSize = fixedSize,
+                    )
+                ) {
+                    iterator.remove()
+                    return item
                 }
             }
+        }
 
         return null
     }
