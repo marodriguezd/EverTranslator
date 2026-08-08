@@ -52,12 +52,6 @@ class SettingFragment : PreferenceFragmentCompat() {
             if (pref.value in 1..4) {
                 pref.value = pref.value * 10
             }
-            pref.setSummaryProvider {
-                val value = pref.value
-                val deciSeconds = if (value in 1..4) value * 10 else value
-                val seconds = deciSeconds / 10.0
-                String.format(Locale.getDefault(), "%.1f s", seconds)
-            }
         }
     }
 

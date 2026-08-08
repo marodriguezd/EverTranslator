@@ -105,14 +105,14 @@
             android:summary="@string/pref_summary_enable_continuous_translation"
             android:title="@string/pref_title_enable_continuous_translation" />
 
-        <SeekBarPreference
+        <tw.firemaples.onscreenocr.pages.setting.DecimalSeekBarPreference
             android:defaultValue="20"
             android:dependency="pref_enable_continuous_translation"
             android:key="pref_continuous_translation_interval"
             android:max="300"
             android:title="@string/pref_title_continuous_translation_interval"
             app:min="5"
-            app:showSeekBarValue="false"
+            app:showSeekBarValue="true"
             app:updatesContinuously="true" />
 
         <SwitchPreferenceCompat
