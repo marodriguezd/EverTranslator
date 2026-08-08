@@ -47,5 +47,12 @@
     "status": "completed",
     "verificationCriteria": "SeekBarPreference allows adjusting interval in 0.1s increments (e.g. 1.2s, 1.5s, 1.8s) with backward compatibility for existing settings",
     "evidence": "Updated SettingManager.kt, perference.xml, and SettingFragment.kt to use deci-seconds (5 to 300 = 0.5s to 30.0s) with live decimal summary formatting. Pushed commit 0625770 to master."
+  },
+  {
+    "id": "GOAL-08",
+    "description": "Fix continuous translation interval slider not updating live on drag & migrate legacy preferences",
+    "status": "in-progress",
+    "verificationCriteria": "SeekBarPreference in perference.xml includes app:updatesContinuously='true', legacy stored values (1..4s) are auto-migrated to deciseconds, and GitHub Actions CI build passes cleanly",
+    "evidence": ""
   }
 ]

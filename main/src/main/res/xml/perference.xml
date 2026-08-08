@@ -112,7 +112,8 @@
             android:max="300"
             android:title="@string/pref_title_continuous_translation_interval"
             app:min="5"
-            app:showSeekBarValue="false" />
+            app:showSeekBarValue="false"
+            app:updatesContinuously="true" />
 
         <SwitchPreferenceCompat
             android:defaultValue="false"

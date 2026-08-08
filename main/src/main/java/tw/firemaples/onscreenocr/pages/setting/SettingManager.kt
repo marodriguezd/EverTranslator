@@ -130,7 +130,13 @@ object SettingManager {
     val continuousTranslationIntervalMs: Long
         get() {
             val stored = preferences.getInt(PREF_CONTINUOUS_TRANSLATION_INTERVAL, 20)
-            val deciSeconds = if (stored in 1..4) stored * 10 else stored
+            val deciSeconds = if (stored in 1..4) {
+                val migrated = stored * 10
+                preferences.edit { putInt(PREF_CONTINUOUS_TRANSLATION_INTERVAL, migrated) }
+                migrated
+            } else {
+                stored
+            }
             return deciSeconds.coerceIn(5, 300) * 100L
         }
 
