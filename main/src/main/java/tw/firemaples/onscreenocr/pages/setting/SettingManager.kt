@@ -35,7 +35,7 @@ object SettingManager {
         "pref_hide_recognized_result_after_translated"
 
     private const val PREF_ENABLE_CONTINUOUS_TRANSLATION = "pref_enable_continuous_translation"
-    private const val PREF_CONTINUOUS_TRANSLATION_INTERVAL =
+    const val PREF_CONTINUOUS_TRANSLATION_INTERVAL =
         "pref_continuous_translation_interval"
     private const val PREF_TRANSLATION_ONLY_MODE = "pref_translation_only_mode"
     private const val PREF_TRANSLATION_TEXT_COLOR = "pref_translation_text_color"
@@ -128,8 +128,11 @@ object SettingManager {
 
     /** Delay between two continuous-translation passes, in milliseconds. */
     val continuousTranslationIntervalMs: Long
-        get() = preferences.getInt(PREF_CONTINUOUS_TRANSLATION_INTERVAL, 2)
-            .coerceIn(1, 30) * 1000L
+        get() {
+            val stored = preferences.getInt(PREF_CONTINUOUS_TRANSLATION_INTERVAL, 20)
+            val deciSeconds = if (stored in 1..4) stored * 10 else stored
+            return deciSeconds.coerceIn(5, 300) * 100L
+        }
 
     /**
      * Minimal overlay mode: only the translated text floats on screen, with no OCR block,

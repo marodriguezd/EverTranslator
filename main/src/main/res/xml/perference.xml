@@ -106,14 +106,13 @@
             android:title="@string/pref_title_enable_continuous_translation" />
 
         <SeekBarPreference
-            android:defaultValue="2"
+            android:defaultValue="20"
             android:dependency="pref_enable_continuous_translation"
             android:key="pref_continuous_translation_interval"
-            android:max="30"
-            android:summary="@string/pref_summary_continuous_translation_interval"
+            android:max="300"
             android:title="@string/pref_title_continuous_translation_interval"
-            app:min="1"
-            app:showSeekBarValue="true" />
+            app:min="5"
+            app:showSeekBarValue="false" />
 
         <SwitchPreferenceCompat
             android:defaultValue="false"

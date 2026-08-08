@@ -8,7 +8,9 @@ import android.text.InputType
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SeekBarPreference
 import androidx.preference.SwitchPreference
+import java.util.Locale
 import tw.firemaples.onscreenocr.R
 import tw.firemaples.onscreenocr.utils.Toaster
 import tw.firemaples.onscreenocr.utils.Utils
@@ -23,6 +25,9 @@ class SettingFragment : PreferenceFragmentCompat() {
 
     private val keepMediaProjectionResources: SwitchPreference?
         get() = findPreference(SettingManager.PREF_KEEP_MEDIA_PROJECTION_RESOURCES)
+
+    private val continuousIntervalPreference: SeekBarPreference?
+        get() = findPreference(SettingManager.PREF_CONTINUOUS_TRANSLATION_INTERVAL)
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.perference, rootKey)
@@ -41,6 +46,15 @@ class SettingFragment : PreferenceFragmentCompat() {
         keepMediaProjectionResources?.setOnPreferenceChangeListener { _, _ ->
             Toaster.show(getString(R.string.msg_please_restart_the_app_to_take_effect))
             true
+        }
+
+        continuousIntervalPreference?.let { pref ->
+            pref.setSummaryProvider {
+                val value = pref.value
+                val deciSeconds = if (value in 1..4) value * 10 else value
+                val seconds = deciSeconds / 10.0
+                String.format(Locale.getDefault(), "%.1f s", seconds)
+            }
         }
     }
 
