@@ -1,101 +1,140 @@
+# EverTranslator
 
-# EverTranslator 
-[![GitHub version](https://badge.fury.io/gh/firemaples%2FEverTranslator.svg)](https://badge.fury.io/gh/firemaples%2FEverTranslator) 
-[![CI](https://github.com/firemaples/EverTranslator/actions/workflows/ci.yml/badge.svg)](https://github.com/firemaples/EverTranslator/actions/workflows/ci.yml)
+<div align="center">
 
-<a href="https://play.google.com/store/apps/details?id=tw.firemaples.onscreenocr">
-  <img src="https://play.google.com/intl/en_us/badges/images/badge_new.png" alt="Get it on google play" />
-  <img src="https://PlayBadges.pavi2410.me/badge/downloads?id=tw.firemaples.onscreenocr" />
-  <img src="https://PlayBadges.pavi2410.me/badge/ratings?id=tw.firemaples.onscreenocr" />
-</a>
+<img src="materials/mipmap-xxhdpi/icon.png" alt="EverTranslator Icon" width="128" height="128" />
 
-<img src="materials/mipmap-xxhdpi/icon.png" alt="app icon" align="right" />
+### On-Screen OCR & Real-Time Translation for Android
 
-Translate any text on screen, even in games!
+*An independent, actively maintained open-source fork bringing screen text recognition and instant translation to modern Android devices.*
 
-<a href="https://www.youtube.com/watch?v=Y0OjF-luuDE">Watch usage guide on Youtube</a>
+[![Latest Release](https://img.shields.io/github/v/release/marodriguezd/EverTranslator?style=for-the-badge&color=007ACC&logo=github)](https://github.com/marodriguezd/EverTranslator/releases/latest)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/marodriguezd/EverTranslator/ci.yml?branch=master&style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/marodriguezd/EverTranslator/actions/workflows/ci.yml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL_v3-blue.svg?style=for-the-badge)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Android%205.0%2B-green.svg?style=for-the-badge&logo=android)](https://developer.android.com)
 
-<p>
-  <img src="materials/PlayStore/device-2016-12-08-204259.jpg" width="200px" />
-  <img src="materials/PlayStore/device-2016-12-08-205120.jpg" width="200px" />
-  <img src="materials/PlayStore/device-2016-12-08-205741.jpg" width="200px" />
-</p>
+---
 
-## Features
+### 📥 [Download Latest Release](https://github.com/marodriguezd/EverTranslator/releases/latest)
 
- - **Recognize** any text on the screen.
- - **Translate** the recognized text.
- - **Copy** the recognized text or translated text.
- - **Read out** the text. (temporarily removed)
+</div>
 
-## Requirement
+---
 
-- Android 5.0 (API level 21) or above.
-- Permission of display over other apps. (not suitable for Android Go)
+## 📖 Overview
 
-## Get the app
+**EverTranslator** is a lightweight, floating screen translator for Android. It allows you to select any region of your screen, perform Optical Character Recognition (OCR), and translate text instantly—without switching apps. 
 
-### Download it on Google Play
+Whether you are playing imported games, reading webtoons, browsing foreign social media, or working with non-selectable text, EverTranslator provides immediate translations right over your active app.
 
-<a href="https://play.google.com/store/apps/details?id=tw.firemaples.onscreenocr">
-  <img src="https://play.google.com/intl/en_us/badges/images/badge_new.png" alt="Get it on google play" />
-</a>
+> **Note on Fork & Distribution**:  
+> This repository is an independent open-source fork maintained by [@marodriguezd](https://github.com/marodriguezd). It incorporates ongoing enhancements, performance optimizations, and updates to the original codebase. **Releases are distributed exclusively via GitHub Releases**.
 
-### Build from source
+---
 
-#### Environment requirements
+## ⚡ Features
 
-- Android SDK
-- Android Studio (optional)
+- 🎯 **On-Screen Area Selection**: Drag and crop any area of your screen for instant OCR extraction.
+- 🌐 **Instant Text Translation**: Fast translation powered by reliable OCR engines and translation services.
+- 🎈 **Floating Overlay Bubble**: Single-tap floating control for effortless activation across any app.
+- 📋 **Clipboard Integration**: Easily copy recognized source text or translated output with a single tap.
+- 🎨 **Modern Android UI**: Designed for clean usability, low memory overhead, and smooth gesture controls.
+- 🔓 **Fully Open Source & Privacy-Focused**: No ads, no telemetry, and no third-party app store requirements.
 
-#### Produce APK by command line
+---
 
-1. Create a local file `./local.properties` and put your Android SDK path to it as `sdk.dir=path to SDK`, or simplily <a href='#open-project-in-android-stuido'>open the project with Android Studio</a>, it will automatically create the required file for you.
-1. Assemble APK file by ```./gradlew clean assembleDevDebug```
-1. You can find the APK file on `main/build/outputs/apk/dev/debug/main-dev-debug.apk`
-1. Install debug APK to your phone by ```adb install -r -t main/build/outputs/apk/dev/debug/main-dev-debug.apk```
+## 📥 Getting the App
 
-#### Open project in Android Stuido
+All official builds are generated and published directly via GitHub Actions CI/CD.
 
-1. Open the project's root folder by Android Studio, the application module is the `main` folder.
-1. You can simplily build and run application by the built-in buttons in Android Studio.
+### 👉 [Click Here to Access the Latest Release](https://github.com/marodriguezd/EverTranslator/releases/latest)
 
-#### Flavors
+#### Package Options:
+- **`EverTranslator-vX.Y.Z-dev-release.apk`**: Recommended production release build.
+- **`EverTranslator-vX.Y.Z-dev-debug.apk`**: Debug build useful for testing or troubleshooting.
 
-- **Dev** for development and rapid CI/CD testing
-- **Prod** for official releases
+> **Installation Tip**: Ensure your Android device allows installing APKs from your browser or file manager ("Install unknown apps" permission).
 
-#### Build & Release Signing (CI/CD)
+---
 
-The GitHub Actions CI/CD pipeline (`.github/workflows/ci.yml` and `.github/workflows/release.yml`) automatically builds both **Debug** and **Release** APKs.
+## 📱 System Requirements
 
-1. **Automated CI Debug Builds**:
-   Every push to `master` or pull request automatically builds a debug APK (`main-dev-debug.apk`) available in the GitHub Actions workflow run artifacts.
+- **Operating System**: Android 5.0 (API level 21) or higher.
+- **Permissions Required**:
+  - `Display over other apps` (`SYSTEM_ALERT_WINDOW`) – Enables the floating overlay interface.
+  - `Screen Capture` – Granted on-demand when capturing selected screen regions.
 
-2. **Automated Signed Releases**:
-   When triggering a release workflow (or publishing a release tag `v*`), GitHub Actions builds signed APKs attached directly to the GitHub Release.
+---
 
-3. **Custom Keystore Configuration (GitHub Secrets)**:
-   To sign releases with your own custom keystore, add the following Repository Secrets in **GitHub Settings -> Secrets and variables -> Actions**:
-   - `KEYSTORE_BASE64`: Base64 encoded `.keystore` / `.jks` file. Convert your keystore file with:
-     ```bash
-     base64 -w 0 /path/to/your.keystore   # Linux
-     base64 -i /path/to/your.keystore     # macOS
-     ```
-   - `KEYSTORE_PASSWORD`: Keystore store password
-   - `KEY_ALIAS`: Key alias name
-   - `KEY_PASSWORD`: Key password
+## 🖼️ Gallery
 
-   *Note: If no custom `KEYSTORE_BASE64` secret is set, GitHub Actions automatically generates a self-signed release keystore so that released APKs are always signed and installable.*
+<div align="center">
 
-## Version History
+<img src="materials/PlayStore/device-2016-12-08-204259.jpg" width="240px" alt="Screenshot 1" />
+<img src="materials/PlayStore/device-2016-12-08-205120.jpg" width="240px" alt="Screenshot 2" />
+<img src="materials/PlayStore/device-2016-12-08-205741.jpg" width="240px" alt="Screenshot 3" />
 
-[Github Page](https://firemaples.github.io/EverTranslator/version_history.html) (big changes)
+</div>
 
-[Release](https://github.com/firemaples/EverTranslator/releases)
+---
 
-## Contact
+## 🛠️ Building from Source
 
-If you encounter a bug, please [raise an issue here](https://github.com/firemaples/EverTranslator/issues/new/choose).  
+### Prerequisites
+- Java Development Kit (JDK 17)
+- Android SDK (API Level 34 / compileSdk 34)
+- Gradle 8.x+ (handled via included `./gradlew` wrapper)
 
-For general questions, you can [raise an issue](https://github.com/firemaples/EverTranslator/issues/new/choose) or send an email firemaples@gmail.com.
+### Build Steps (Command Line)
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/marodriguezd/EverTranslator.git
+   cd EverTranslator
+   ```
+
+2. **Configure SDK Path**:
+   Create a `local.properties` file in the root directory (or open in Android Studio to auto-generate):
+   ```properties
+   sdk.dir=/path/to/your/android-sdk
+   ```
+
+3. **Build Debug APK**:
+   ```bash
+   ./gradlew clean assembleDevDebug
+   ```
+   *Output APK location*: `main/build/outputs/apk/dev/debug/main-dev-debug.apk`
+
+4. **Build Release APK**:
+   ```bash
+   ./gradlew assembleDevRelease
+   ```
+   *Output APK location*: `main/build/outputs/apk/dev/release/main-dev-release.apk`
+
+---
+
+## 🤖 CI/CD Pipeline & Automated Releases
+
+This project utilizes GitHub Actions for continuous integration and automated releases:
+
+- **Continuous Integration (`.github/workflows/ci.yml`)**:  
+  Automatically builds and tests every push or pull request to `master`. Debug APKs are preserved as workflow artifacts.
+
+- **Automated Releases (`.github/workflows/release.yml`)**:  
+  Triggered automatically on new version tags (`v*`) or manually via **Workflow Dispatch**. Generates signed, installable APKs directly attached to the corresponding [GitHub Release](https://github.com/marodriguezd/EverTranslator/releases).
+
+- **Custom Release Keystore (GitHub Secrets)**:  
+  Configure `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD` in repository secrets for custom signing. If unconfigured, GitHub Actions generates a valid self-signed release keystore automatically.
+
+---
+
+## 🤝 Support & Issues
+
+If you encounter bugs, have suggestions, or want to contribute:
+- Check existing issues or submit a new report on the [GitHub Issue Tracker](https://github.com/marodriguezd/EverTranslator/issues).
+
+---
+
+## 📜 License
+
+EverTranslator is open-source software licensed under the **[GNU General Public License v3.0 (GPL-3.0)](LICENSE)**.
