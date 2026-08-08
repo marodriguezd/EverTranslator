@@ -14,3 +14,6 @@ Investigate and resolve the force-close crash occurring when requesting screen c
 1. Add `FOREGROUND_SERVICE_MEDIA_PROJECTION` permission to `AndroidManifest.xml`.
 2. Update `ViewHolderService` start logic to use `ContextCompat.startForegroundService` and guarantee immediate `startForeground` execution.
 3. Verify Android 14 FGS compatibility, commit changes to `exp/material3-2026-optimization`, and trigger CI build on GitHub Actions.
+4. Fix floating result window bug during continuous translation mode.
+5. Configure Gradle signing and GitHub Actions CI/CD pipeline for signed Debug and Release APKs.
+6. Document Keystore signing, GitHub Secrets configuration, and CI/CD workflow in `README.md`.

@@ -26,5 +26,19 @@
     "status": "completed",
     "verificationCriteria": "Prevent viewResultWindow from being set to visible before translated text is populated",
     "evidence": "Updated reposition() in ResultView.kt to check if tvTranslatedText has non-empty text before setting viewResultWindow visible in translationOnlyMode/hideRecognizedResultAfterTranslated mode. Pushed commit 88a0a64 to master."
+  },
+  {
+    "id": "GOAL-05",
+    "description": "Configure Gradle signing & GitHub Actions CI/CD for signed Debug and Release APKs",
+    "status": "completed",
+    "verificationCriteria": "Gradle builds signed Release APKs locally and in GitHub Actions via environment variables / secrets / fallback keystore",
+    "evidence": "Configured main/build.gradle with signingConfigs.release and fallback to debug key. Updated release.yml to support base64 KEYSTORE_BASE64 GitHub secret or auto-generated self-signed release key for GitHub Releases."
+  },
+  {
+    "id": "GOAL-06",
+    "description": "Document Keystore signing, GitHub Secrets, and CI/CD workflow in README.md",
+    "status": "completed",
+    "verificationCriteria": "README.md updated with clear instructions for Keystore configuration, GitHub Actions secret keys, and CI/CD releases",
+    "evidence": "Updated README.md with detailed instructions for automated CI/CD builds, GitHub Actions Release workflows, Base64 Keystore generation, and GitHub Repository Secrets setup."
   }
 ]

@@ -62,8 +62,31 @@ Translate any text on screen, even in games!
 
 #### Flavors
 
-- **Dev** for development
-- **Prod** for releasing to Google Play
+- **Dev** for development and rapid CI/CD testing
+- **Prod** for official releases
+
+#### Build & Release Signing (CI/CD)
+
+The GitHub Actions CI/CD pipeline (`.github/workflows/ci.yml` and `.github/workflows/release.yml`) automatically builds both **Debug** and **Release** APKs.
+
+1. **Automated CI Debug Builds**:
+   Every push to `master` or pull request automatically builds a debug APK (`main-dev-debug.apk`) available in the GitHub Actions workflow run artifacts.
+
+2. **Automated Signed Releases**:
+   When triggering a release workflow (or publishing a release tag `v*`), GitHub Actions builds signed APKs attached directly to the GitHub Release.
+
+3. **Custom Keystore Configuration (GitHub Secrets)**:
+   To sign releases with your own custom keystore, add the following Repository Secrets in **GitHub Settings -> Secrets and variables -> Actions**:
+   - `KEYSTORE_BASE64`: Base64 encoded `.keystore` / `.jks` file. Convert your keystore file with:
+     ```bash
+     base64 -w 0 /path/to/your.keystore   # Linux
+     base64 -i /path/to/your.keystore     # macOS
+     ```
+   - `KEYSTORE_PASSWORD`: Keystore store password
+   - `KEY_ALIAS`: Key alias name
+   - `KEY_PASSWORD`: Key password
+
+   *Note: If no custom `KEYSTORE_BASE64` secret is set, GitHub Actions automatically generates a self-signed release keystore so that released APKs are always signed and installable.*
 
 ## Version History
 

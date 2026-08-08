@@ -36,6 +36,38 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Setup Keystore for Signed Release Build
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          mkdir -p keystore
+          if [ -n "${KEYSTORE_BASE64:-}" ]; then
+            echo "Decoding KEYSTORE_BASE64 secret..."
+            echo "${KEYSTORE_BASE64}" | base64 -d > keystore/release.keystore
+            echo "KEYSTORE_FILE=${GITHUB_WORKSPACE}/keystore/release.keystore" >> $GITHUB_ENV
+            echo "KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-android}" >> $GITHUB_ENV
+            echo "KEY_ALIAS=${KEY_ALIAS:-releasekey}" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=${KEY_PASSWORD:-android}" >> $GITHUB_ENV
+          else
+            echo "No KEYSTORE_BASE64 secret found. Generating self-signed release keystore for GitHub release..."
+            keytool -genkeypair -v \
+              -keystore keystore/release.keystore \
+              -alias releasekey \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass android \
+              -keypass android \
+              -dname "CN=EverTranslator, OU=Dev, O=EverTranslator, L=City, S=State, C=US"
+            echo "KEYSTORE_FILE=${GITHUB_WORKSPACE}/keystore/release.keystore" >> $GITHUB_ENV
+            echo "KEYSTORE_PASSWORD=android" >> $GITHUB_ENV
+            echo "KEY_ALIAS=releasekey" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=android" >> $GITHUB_ENV
+          fi
+
       - name: Build APKs with Gradle
         run: ./gradlew assembleDevDebug assembleDevRelease
 
@@ -51,13 +83,12 @@ jobs:
           echo "APKs produced by the build:"
           find main/build/outputs/apk -name '*.apk' -print
 
-          # The dev flavour is not signed, so the release APK is emitted as
-          # 'main-dev-release-unsigned.apk'. Copy whatever the build actually
-          # produced instead of assuming a fixed file name.
           found=0
           for apk in $(find main/build/outputs/apk -name '*.apk' | sort); do
-            base="$(basename "$apk" .apk)"
-            cp "$apk" "release_assets/EverTranslator-${TAG_NAME}-${base#main-}.apk"
+            filename="$(basename "$apk")"
+            clean_name="${filename#-unsigned}"
+            clean_name="${clean_name#main-}"
+            cp "$apk" "release_assets/EverTranslator-${TAG_NAME}-${clean_name}"
             found=1
           done
 
