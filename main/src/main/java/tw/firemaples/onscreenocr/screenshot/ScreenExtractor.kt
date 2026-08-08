@@ -266,12 +266,32 @@ object ScreenExtractor {
         suspendCancellableCoroutine {
             if (imageReaderReady) {
                 logger.debug("reader is ready, acquireLatestImage directly")
-                val image = acquireLatestImage()
-                val bitmap = image.decodeBitmap(screenSize)
-                image.close()
-                logger.debug("Latest bitmap: $bitmap")
-                it.resume(bitmap)
-                return@suspendCancellableCoroutine
+                val image = try {
+                    acquireLatestImage()
+                } catch (e: Exception) {
+                    logger.warn("acquireLatestImage failed", t = e)
+                    null
+                }
+                if (image != null) {
+                    try {
+                        val bitmap = image.decodeBitmap(screenSize)
+                        if (!bitmap.isWholeBlack()) {
+                            logger.debug("Latest bitmap: $bitmap")
+                            it.resume(bitmap)
+                            return@suspendCancellableCoroutine
+                        }
+                        bitmap.setReusable()
+                    } catch (e: Exception) {
+                        logger.warn("Error decoding bitmap from acquired image", t = e)
+                    } finally {
+                        try {
+                            image.close()
+                        } catch (e: Exception) {
+                            logger.warn("Error closing image", t = e)
+                        }
+                    }
+                }
+                logger.debug("acquireLatestImage returned null or wholeBlack, fallback to setOnImageAvailableListener")
             }
 
             logger.debug("suspendCancellableCoroutine: Started")

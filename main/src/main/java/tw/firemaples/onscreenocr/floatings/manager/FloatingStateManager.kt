@@ -293,21 +293,30 @@ object FloatingStateManager {
                             FirebaseEvent.logMicrosoftTranslationError(error)
                         }
 
-                        if (error is IOException) {
-                            showError(context.getString(R.string.error_can_not_connect_to_translation_server))
+                        if (isContinuousModeRunning) {
+                            logger.warn("Continuous translation pass failed, retrying on next tick: ${error.message}", t = error)
+                            changeState(State.ResultDisplaying)
                         } else {
-                            FirebaseEvent.logException(error)
-                            showError(
-                                error.localizedMessage
-                                    ?: context.getString(R.string.error_unknown)
-                            )
+                            if (error is IOException) {
+                                showError(context.getString(R.string.error_can_not_connect_to_translation_server))
+                            } else {
+                                FirebaseEvent.logException(error)
+                                showError(
+                                    error.localizedMessage
+                                        ?: context.getString(R.string.error_unknown)
+                                )
+                            }
                         }
                     }
                 }
             } catch (e: Exception) {
                 logger.warn(t = e)
                 FirebaseEvent.logException(e)
-                showError(e.message ?: "Unknown error found while translating")
+                if (isContinuousModeRunning) {
+                    changeState(State.ResultDisplaying)
+                } else {
+                    showError(e.message ?: "Unknown error found while translating")
+                }
             }
         }
 
