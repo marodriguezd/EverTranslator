@@ -15,12 +15,6 @@ class DecimalSeekBarPreference @JvmOverloads constructor(
     defStyleAttr: Int = androidx.preference.R.attr.seekBarPreferenceStyle
 ) : SeekBarPreference(context, attrs, defStyleAttr) {
 
-    init {
-        summaryProvider = SummaryProvider<DecimalSeekBarPreference> { pref ->
-            formatValue(pref.value)
-        }
-    }
-
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
 

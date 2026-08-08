@@ -117,12 +117,14 @@ object FloatingStateManager {
         }
     }
 
-    fun startScreenCircling() = stateIn(State.Idle::class) {
+    fun startScreenCircling() = stateIn(State.Idle::class, State.ResultDisplaying::class) {
         if (!Translator.getTranslator().checkEnvironment(scope)) {
             return@stateIn
         }
 
         logger.debug("startScreenCircling()")
+        stopContinuousTranslation()
+        resultView.backToIdle()
         changeState(State.ScreenCircling)
         FirebaseEvent.logStartAreaSelection()
         screenCirclingView.attachToScreen()
@@ -139,10 +141,13 @@ object FloatingStateManager {
             this@FloatingStateManager.parentRect = parentRect
         }
 
-    fun cancelScreenCircling() = stateIn(State.ScreenCircling::class, State.ScreenCircled::class) {
+    fun cancelScreenCircling() = stateIn(
+        State.ScreenCircling::class,
+        State.ScreenCircled::class,
+        State.ResultDisplaying::class
+    ) {
         logger.debug("cancelScreenCircling()")
-        changeState(State.Idle)
-        screenCirclingView.detachFromScreen()
+        backToIdle()
     }
 
     fun startScreenCapturing(selectedOCRLang: String) = stateIn(State.ScreenCircled::class) {
@@ -502,7 +507,11 @@ object FloatingStateManager {
                     State.ResultDisplaying::class, State.ErrorDisplaying::class, State.Idle::class
                 )
 
-            State.ResultDisplaying -> arrayOf(State.Idle::class, State.TextTranslating::class)
+            State.ResultDisplaying -> arrayOf(
+                State.Idle::class,
+                State.TextTranslating::class,
+                State.ScreenCircling::class
+            )
             is State.ErrorDisplaying -> arrayOf(State.Idle::class)
         }
 

@@ -130,10 +130,10 @@ class MainBarViewModel(viewScope: CoroutineScope) : FloatingViewModel(viewScope)
     @Suppress("RedundantSuspendModifier")
     private suspend fun setupButtons(state: State) {
         logger.debug("setupButtons(): $state")
-        _displaySelectButton.value = state == State.Idle
+        _displaySelectButton.value = state == State.Idle || state == State.ResultDisplaying
         _displayTranslateButton.value = state == State.ScreenCircled
         _displayCloseButton.value =
-            state == State.ScreenCircling || state == State.ScreenCircled
+            state == State.ScreenCircling || state == State.ScreenCircled || state == State.ResultDisplaying
     }
 
     @Suppress("RedundantSuspendModifier")
