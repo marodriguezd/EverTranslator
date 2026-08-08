@@ -1,8 +1,9 @@
 package tw.firemaples.onscreenocr.pages.setting
 
 import android.content.Context
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.AttributeSet
-import android.widget.SeekBar
 import android.widget.TextView
 import androidx.preference.PreferenceViewHolder
 import androidx.preference.SeekBarPreference
@@ -14,37 +15,56 @@ class DecimalSeekBarPreference @JvmOverloads constructor(
     defStyleAttr: Int = androidx.preference.R.attr.seekBarPreferenceStyle
 ) : SeekBarPreference(context, attrs, defStyleAttr) {
 
-    private var valueTextView: TextView? = null
+    init {
+        summaryProvider = SummaryProvider<DecimalSeekBarPreference> { pref ->
+            formatValue(pref.value)
+        }
+    }
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
-        valueTextView = holder.findViewById(androidx.preference.R.id.seekbar_value) as? TextView
 
-        updateText(value)
-
-        val seekBar = holder.findViewById(androidx.preference.R.id.seekbar) as? SeekBar
-        seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                val currentDeci = progress + min
-                updateText(currentDeci)
+        val valueTextView = holder.findViewById(androidx.preference.R.id.seekbar_value) as? TextView
+        if (valueTextView != null) {
+            (valueTextView.tag as? TextWatcher)?.let { oldWatcher ->
+                valueTextView.removeTextChangedListener(oldWatcher)
             }
 
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            val textWatcher = object : TextWatcher {
+                private var isFormatting = false
 
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                seekBar?.let {
-                    val newDeci = it.progress + min
-                    value = newDeci
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+                override fun afterTextChanged(s: Editable?) {
+                    if (isFormatting || s == null) return
+                    val text = s.toString()
+                    if (text.endsWith(" s")) return
+
+                    val deciValue = text.toIntOrNull() ?: return
+                    val formatted = formatValue(deciValue)
+
+                    isFormatting = true
+                    valueTextView.text = formatted
+                    isFormatting = false
                 }
             }
-        })
+
+            valueTextView.tag = textWatcher
+            valueTextView.addTextChangedListener(textWatcher)
+
+            val currentText = valueTextView.text.toString()
+            if (!currentText.endsWith(" s")) {
+                valueTextView.text = formatValue(value)
+            }
+        }
     }
 
-    private fun updateText(deciSecondsValue: Int) {
-        val deciSeconds = if (deciSecondsValue in 1..4) deciSecondsValue * 10 else deciSecondsValue
-        val seconds = deciSeconds / 10.0
-        val formatted = String.format(Locale.getDefault(), "%.1f s", seconds)
-        valueTextView?.text = formatted
-        summary = formatted
+    companion object {
+        fun formatValue(deciSecondsValue: Int): String {
+            val deciSeconds = if (deciSecondsValue in 1..4) deciSecondsValue * 10 else deciSecondsValue
+            val seconds = deciSeconds / 10.0
+            return String.format(Locale.getDefault(), "%.1f s", seconds)
+        }
     }
 }
