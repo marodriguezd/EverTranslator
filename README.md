@@ -135,6 +135,14 @@ If you encounter bugs, have suggestions, or want to contribute:
 
 ---
 
-## 📜 License
+## 📜 License & Legal Notice
 
+### License
 EverTranslator is open-source software licensed under the **[GNU General Public License v3.0 (GPL-3.0)](LICENSE)**.
+
+### Copyright & Original Work
+- **Original Creator**: FireMaples ([firemaples/EverTranslator](https://github.com/firemaples/EverTranslator))
+- **Fork Maintainer**: [@marodriguezd](https://github.com/marodriguezd)
+- **Fork Notice**: This repository is an independent open-source fork. It incorporates ongoing refactoring, Material Design 3 enhancements, performance fixes, and custom automated release workflows maintained by @marodriguezd.
+- For complete legal notice and statement of modifications, see **[NOTICE.md](NOTICE.md)**.
+
