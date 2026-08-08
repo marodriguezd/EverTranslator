@@ -406,7 +406,17 @@ object FloatingStateManager {
 
         val newText = result.result.normalizeForComparison()
 
-        if (newText.isEmpty() || newText == lastRecognizedText) {
+        if (newText.isEmpty()) {
+            logger.debug("Continuous pass: no text detected on screen")
+            bitmap.setReusable()
+            if (lastRecognizedText != null) {
+                lastRecognizedText = null
+                resultView.clearResult()
+            }
+            return
+        }
+
+        if (newText == lastRecognizedText) {
             // Nothing changed on screen: skip recognition display and translation entirely.
             logger.debug("Continuous pass skipped, text unchanged")
             bitmap.setReusable()

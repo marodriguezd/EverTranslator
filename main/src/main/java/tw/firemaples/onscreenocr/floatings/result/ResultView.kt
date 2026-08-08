@@ -300,6 +300,10 @@ class ResultView(context: Context) : FloatingView(context) {
         viewModel.textTranslated(result)
     }
 
+    fun clearResult() {
+        viewModel.clearResult()
+    }
+
     fun backToIdle() {
         detachFromScreen()
     }

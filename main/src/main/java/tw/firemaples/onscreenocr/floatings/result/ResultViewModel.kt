@@ -100,6 +100,23 @@ class ResultViewModel(viewScope: CoroutineScope) : FloatingViewModel(viewScope) 
         }
     }
 
+    fun clearResult() {
+        viewScope.launch {
+            _displayRecognizedTextAreas.value = emptyList<Rect>() to Rect()
+
+            _displayOCROperationProgress.value = false
+            _displayTranslationProgress.value = false
+
+            _ocrText.value = null
+            _translatedText.value = null
+
+            _displayRecognitionBlock.value = false
+            _displayTranslationBlock.value = false
+            _translationProviderText.value = null
+            _displayTranslatedByGoogle.value = false
+        }
+    }
+
     fun textRecognized(result: RecognitionResult, parent: Rect, selected: Rect, viewRect: Rect) {
         viewScope.launch {
             this@ResultViewModel.lastLangCode = result.langCode

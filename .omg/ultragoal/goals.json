@@ -15,9 +15,16 @@
   },
   {
     "id": "GOAL-03",
-    "description": "Commit, push to exp/material3-2026-optimization, and trigger CI build on GitHub Actions",
-    "status": "in-progress",
-    "verificationCriteria": "GitHub Actions CI build passes and produces main-dev-debug.apk",
-    "evidence": ""
+    "description": "Material 3 UI refinement and merge to master",
+    "status": "completed",
+    "verificationCriteria": "Material 3 dialog card layout updated, auto-changelog on launch removed, merged to master branch and pushed to remote",
+    "evidence": "Merged exp/material3-2026-optimization to master and pushed to origin/master. GitHub Actions CI run #3120944062 passed cleanly."
+  },
+  {
+    "id": "GOAL-04",
+    "description": "Fix blank result window bug during continuous translation in translation-only mode",
+    "status": "completed",
+    "verificationCriteria": "Prevent viewResultWindow from being set to visible before translated text is populated",
+    "evidence": "Updated reposition() in ResultView.kt to check if tvTranslatedText has non-empty text before setting viewResultWindow visible in translationOnlyMode/hideRecognizedResultAfterTranslated mode. Pushed commit 88a0a64 to master."
   }
 ]
