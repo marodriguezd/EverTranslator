@@ -40,5 +40,12 @@
     "status": "completed",
     "verificationCriteria": "README.md updated with clear instructions for Keystore configuration, GitHub Actions secret keys, and CI/CD releases",
     "evidence": "Updated README.md with detailed instructions for automated CI/CD builds, GitHub Actions Release workflows, Base64 Keystore generation, and GitHub Repository Secrets setup."
+  },
+  {
+    "id": "GOAL-07",
+    "description": "Support decimal second intervals (0.5s to 30.0s in 0.1s steps) for continuous translation",
+    "status": "completed",
+    "verificationCriteria": "SeekBarPreference allows adjusting interval in 0.1s increments (e.g. 1.2s, 1.5s, 1.8s) with backward compatibility for existing settings",
+    "evidence": "Updated SettingManager.kt, perference.xml, and SettingFragment.kt to use deci-seconds (5 to 300 = 0.5s to 30.0s) with live decimal summary formatting. Pushed commit 0625770 to master."
   }
 ]
