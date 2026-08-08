@@ -51,8 +51,8 @@
   {
     "id": "GOAL-08",
     "description": "Fix continuous translation interval slider not updating live on drag & migrate legacy preferences",
-    "status": "in-progress",
+    "status": "completed",
     "verificationCriteria": "SeekBarPreference in perference.xml includes app:updatesContinuously='true', legacy stored values (1..4s) are auto-migrated to deciseconds, and GitHub Actions CI build passes cleanly",
-    "evidence": ""
+    "evidence": "Updated perference.xml with app:updatesContinuously='true', added legacy preference migration in SettingManager.kt and SettingFragment.kt, pushed commit ed5d134 to master, and verified GitHub Actions CI run #31252360930 passed cleanly."
   }
 ]
